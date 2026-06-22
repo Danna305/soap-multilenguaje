@@ -45,9 +45,9 @@ std::string llamarSOAP(const std::string& n) {
         curl_slist_free_all(headers);
     }
 
-    size_t inicio = respuesta.find("<NumberToWordsResult>") + 21;
-    size_t fin = respuesta.find("</NumberToWordsResult>");
-    return respuesta.substr(inicio, fin - inicio);
+     size_t inicio = respuesta.find("NumberToWordsResult>") + 20;
+     size_t fin = respuesta.find("<", inicio);
+     return respuesta.substr(inicio, fin - inicio);
 }
 
 void manejarCliente(SOCKET cliente) {

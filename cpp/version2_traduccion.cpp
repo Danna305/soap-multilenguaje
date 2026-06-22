@@ -72,12 +72,14 @@ void manejarCliente(SOCKET cliente) {
         soap, "text/xml; charset=utf-8"
     );
 
-    size_t ini = soapResp.find("<NumberToWordsResult>") + 21;
-    size_t fin2 = soapResp.find("</NumberToWordsResult>");
+    size_t ini = soapResp.find("NumberToWordsResult>") + 20;
+    size_t fin2 = soapResp.find("<", ini);
     std::string enIngles = soapResp.substr(ini, fin2 - ini);
-
     // Traducción
-    std::string urlTrad = "https://api.mymemory.translated.net/get?q=" + enIngles + "&langpair=en|es";
+    // Limpiar espacios de enIngles
+    while (!enIngles.empty() && (enIngles.back() == ' ' || enIngles.back() == '\r' || enIngles.back() == '\n'))
+    enIngles.pop_back();
+std::string urlTrad = "https://api.mymemory.translated.net/get?q=" + enIngles + "&langpair=en%7Ces";
     std::string tradResp = httpGet(urlTrad);
 
     size_t tIni = tradResp.find("\"translatedText\":\"") + 18;
