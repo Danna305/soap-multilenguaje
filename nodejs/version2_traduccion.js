@@ -1,14 +1,11 @@
 // http://localhost:3001/?n=10
-// Traduce el resultado de inglés a español con Google Translate
 
 const http = require('http');
-const soap = require('soap');
-const { translate } = require('@vitalets/google-translate-api');
 
-const WSDL = 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso?WSDL';
+const WSDL_URL = 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso';
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://localhost:3001`);
+  const url = new URL(req.url, 'http://localhost:3001');
   const n = url.searchParams.get('n');
 
   if (!n) {
@@ -16,12 +13,42 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  const client = await soap.createClientAsync(WSDL);
-  const result = await client.NumberToWordsAsync({ ubiNum: parseInt(n) });
-  const enIngles = result[0].NumberToWordsResult;
+  try {
+    // Llamada SOAP
+    const soap = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <NumberToWords xmlns="http://www.dataaccess.com/webservicesserver/">
+      <ubiNum>${n}</ubiNum>
+    </NumberToWords>
+  </soap:Body>
+</soap:Envelope>`;
 
-  const traduccion = await translate(enIngles, { to: 'es' });
-  res.end(traduccion.text);
+    const soapResp = await fetch(WSDL_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      body: soap
+    });
+
+    const soapText = await soapResp.text();
+    const enIngles = soapText
+      .split('<NumberToWordsResult>')[1]
+      .split('</NumberToWordsResult>')[0]
+      .trim();
+
+    // Traducción con MyMemory API
+    const tradResp = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(enIngles)}&langpair=en|es`
+    );
+    const tradJson = await tradResp.json();
+    const traducido = tradJson.responseData.translatedText;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end(traducido);
+
+  } catch (err) {
+    res.end('Error: ' + err.message);
+  }
 });
 
 server.listen(3001, () => console.log('Servidor en http://localhost:3001/?n=10'));
