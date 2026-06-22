@@ -1,0 +1,11 @@
+[package]
+name = "version2_traduccion"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+warp = "0.3"
+serde_json = "1"
+urlencoding = "2"
