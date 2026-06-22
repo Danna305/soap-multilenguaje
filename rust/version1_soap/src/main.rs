@@ -32,11 +32,11 @@ async fn main() {
                 .unwrap();
 
             let result = resp
-                .split("<NumberToWordsResult>")
-                .nth(1).unwrap_or("")
-                .split("</NumberToWordsResult>")
-                .next().unwrap_or("")
-                .to_string();
+            .split("NumberToWordsResult>")
+            .nth(1).unwrap_or("")
+            .split("<")
+            .next().unwrap_or("")
+            .to_string();
 
             Ok::<_, warp::Rejection>(warp::reply::with_header(
                 result,

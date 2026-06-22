@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=C:\Users\danna\Downloads\soap-multilenguaje\rust\version1_soap\target\debug\build\mime_guess-355eb232760f8274\out\mime_types_generated.rs

@@ -32,11 +32,10 @@ async fn main() {
                 .unwrap();
 
             let en_ingles = soap_resp
-                .split("<NumberToWordsResult>")
+                .split("NumberToWordsResult>")
                 .nth(1).unwrap_or("")
-                .split("</NumberToWordsResult>")
+                .split("<")
                 .next().unwrap_or("")
-                .trim()
                 .to_string();
 
             let url = format!(
