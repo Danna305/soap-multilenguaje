@@ -1,30 +1,37 @@
 // http://localhost:8082/?n=10
-// Usa RuleBasedNumberFormat de ICU4J para convertir a español nativo
+// javac -cp . version3_intl.java
+// java -cp . version3_intl
 
 import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.*;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 public class version3_intl {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8082), 0);
         server.createContext("/", exchange -> {
-            String query = exchange.getRequestURI().getQuery();
-            String n = "0";
-            if (query != null && query.contains("n=")) {
-                n = query.split("n=")[1];
+            try {
+                String query = exchange.getRequestURI().getQuery();
+                String n = "0";
+                if (query != null && query.contains("n=")) {
+                    n = query.split("n=")[1];
+                }
+
+                long numero = Long.parseLong(n);
+                String resultado = convertirAEspanol(numero);
+
+                byte[] resp = resultado.getBytes("UTF-8");
+                exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+                exchange.sendResponseHeaders(200, resp.length);
+                exchange.getResponseBody().write(resp);
+                exchange.getResponseBody().close();
+
+            } catch (Exception e) {
+                byte[] resp = ("Error: " + e.getMessage()).getBytes();
+                exchange.sendResponseHeaders(500, resp.length);
+                exchange.getResponseBody().write(resp);
+                exchange.getResponseBody().close();
             }
-
-            long numero = Long.parseLong(n);
-            String resultado = convertirAEspanol(numero);
-
-            byte[] resp = resultado.getBytes("UTF-8");
-            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
-            exchange.sendResponseHeaders(200, resp.length);
-            exchange.getResponseBody().write(resp);
-            exchange.getResponseBody().close();
         });
 
         server.start();
@@ -47,11 +54,11 @@ public class version3_intl {
 
         if (n <= 20) return unidades[(int) n];
         if (n < 30) return "veinti" + unidades[(int)(n - 20)];
-        if (n < 100) return decenas[(int)(n / 10)] + (n % 10 != 0 ? " y " + unidades[(int)(n % 10)] : "");
+        if (n < 100) return decenas[(int)(n/10)] + (n%10 != 0 ? " y " + unidades[(int)(n%10)] : "");
         if (n == 100) return "cien";
-        if (n < 1000) return centenas[(int)(n / 100)] + (n % 100 != 0 ? " " + convertirAEspanol(n % 100) : "");
-        if (n < 2000) return "mil" + (n % 1000 != 0 ? " " + convertirAEspanol(n % 1000) : "");
-        if (n < 1000000) return convertirAEspanol(n / 1000) + " mil" + (n % 1000 != 0 ? " " + convertirAEspanol(n % 1000) : "");
+        if (n < 1000) return centenas[(int)(n/100)] + (n%100 != 0 ? " " + convertirAEspanol(n%100) : "");
+        if (n < 2000) return "mil" + (n%1000 != 0 ? " " + convertirAEspanol(n%1000) : "");
+        if (n < 1000000) return convertirAEspanol(n/1000) + " mil" + (n%1000 != 0 ? " " + convertirAEspanol(n%1000) : "");
         return String.valueOf(n);
     }
 }
