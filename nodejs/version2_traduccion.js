@@ -2,7 +2,7 @@
 
 const http = require('http');
 
-const WSDL_URL = 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso';
+const SOAP_URL = 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso';
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost:3001');
@@ -14,7 +14,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
-    // Llamada SOAP
     const soap = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -24,19 +23,34 @@ const server = http.createServer(async (req, res) => {
   </soap:Body>
 </soap:Envelope>`;
 
-    const soapResp = await fetch(WSDL_URL, {
+    // Llamada SOAP
+    const soapResp = await fetch(SOAP_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      headers: { 
+        'Content-Type': 'text/xml; charset=utf-8',
+        'SOAPAction': '""'
+      },
       body: soap
     });
 
     const soapText = await soapResp.text();
-    const enIngles = soapText
-      .split('<NumberToWordsResult>')[1]
-      .split('</NumberToWordsResult>')[0]
-      .trim();
+    console.log('Respuesta SOAP:', soapText.substring(0, 300));
 
-    // Traducción con MyMemory API
+    // Parsear respuesta con o sin namespace
+    let enIngles = '';
+    if (soapText.includes('NumberToWordsResult>')) {
+      enIngles = soapText
+        .split('NumberToWordsResult>')[1]
+        .split('<')[0]
+        .trim();
+    } else {
+      res.end('Error: no se encontró resultado en: ' + soapText.substring(0, 200));
+      return;
+    }
+
+    console.log('En inglés:', enIngles);
+
+    // Traducción
     const tradResp = await fetch(
       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(enIngles)}&langpair=en|es`
     );
@@ -47,6 +61,7 @@ const server = http.createServer(async (req, res) => {
     res.end(traducido);
 
   } catch (err) {
+    console.log('Error completo:', err);
     res.end('Error: ' + err.message);
   }
 });
