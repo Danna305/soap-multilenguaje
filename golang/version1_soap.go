@@ -39,7 +39,8 @@ func main() {
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
-		result := strings.Split(strings.Split(string(body), "<NumberToWordsResult>")[1], "</NumberToWordsResult>")[0]
+		bodyStr := string(body)
+		result := strings.Split(strings.Split(bodyStr, "NumberToWordsResult>")[1], "<")[0]
 		fmt.Fprint(w, result)
 	})
 

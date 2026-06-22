@@ -42,13 +42,14 @@ func main() {
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
+		bodyStr := string(body)
 		enIngles := strings.TrimSpace(
-			strings.Split(strings.Split(string(body), "<NumberToWordsResult>")[1], "</NumberToWordsResult>")[0],
+			strings.Split(strings.Split(bodyStr, "NumberToWordsResult>")[1], "<")[0],
 		)
 
 		// Traducción con MyMemory API
 		apiURL := "https://api.mymemory.translated.net/get?q=" +
-			url.QueryEscape(enIngles) + "&langpair=en|es"
+			url.QueryEscape(enIngles) + "&langpair=en%7Ces"
 
 		tradResp, err := http.Get(apiURL)
 		if err != nil {
