@@ -34,7 +34,7 @@ app.MapGet("/", async (HttpContext ctx) =>
     );
 
     var body = await response.Content.ReadAsStringAsync();
-    var result = body.Split("<NumberToWordsResult>")[1].Split("</NumberToWordsResult>")[0];
+    var result = body.Split("NumberToWordsResult>")[1].Split("<")[0];
 
     ctx.Response.ContentType = "text/plain; charset=utf-8";
     await ctx.Response.WriteAsync(result);

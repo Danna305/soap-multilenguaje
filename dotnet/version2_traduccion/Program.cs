@@ -34,8 +34,8 @@ app.MapGet("/", async (HttpContext ctx) =>
         soapContent
     );
     var soapBody = await soapResp.Content.ReadAsStringAsync();
-    var enIngles = soapBody.Split("<NumberToWordsResult>")[1]
-                           .Split("</NumberToWordsResult>")[0].Trim();
+    var enIngles = soapBody.Split("NumberToWordsResult>")[1]
+                       .Split("<")[0].Trim();
 
     // Traducción con MyMemory API
     var urlTrad = $"https://api.mymemory.translated.net/get?q={Uri.EscapeDataString(enIngles)}&langpair=en|es";
